@@ -45,12 +45,16 @@ const logout = () => {
                                 <Link :href="route('dashboard')">
                                     <ApplicationMark class="block h-9 w-auto" />
                                 </Link>
+
                             </div>
 
                             <!-- Navigation Links -->
                             <div class="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
                                 <NavLink :href="route('dashboard')" :active="route().current('dashboard')">
                                     Dashboard
+                                </NavLink>
+                                <NavLink :href="route('sensors.index')" :active="route().current('sensors.index')">
+                                    Sensors
                                 </NavLink>
                             </div>
                         </div>
