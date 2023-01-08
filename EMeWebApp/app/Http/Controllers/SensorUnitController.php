@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\SensorUnit;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
@@ -95,11 +96,37 @@ class SensorUnitController extends Controller
      *
      * @param Request $request
      * @param int $id
-     * @return Response
+     * @return \Illuminate\Http\RedirectResponse
      */
     public function update(Request $request, $id)
     {
-        //
+        $request->validate([
+            'name' => ['required', 'max:32'],
+            'type' => ['required'],
+            'description' => ['max:256'],
+            'long' => ['required', 'decimal:0,7'],
+            'lat' => ['required', 'decimal:0,7']
+        ]);
+
+        $unit = SensorUnit::where(
+            [
+                ['user_id', $request->user()->id],
+                ['id', $id]
+            ]
+        );
+
+        $content = json_decode($request->getContent(), false);
+
+        if($unit->exists()) {
+            $unit->update([
+                'name' => $content->name,
+                'type' => $content->type,
+                'description' => $content->description,
+                'long' => $content->long,
+                'lat' => $content->lat,
+                'auth_key' => $content->auth_key
+            ]);
+        }
     }
 
     /**
@@ -117,7 +144,7 @@ class SensorUnitController extends Controller
             ]
         );
 
-        if($unit) {
+        if($unit->exists()) {
             $unit->delete();
         }
     }
@@ -125,7 +152,8 @@ class SensorUnitController extends Controller
     public function generateKey() {
         $key = Str::random(32);
 
-        while(SensorUnit::whereAuthKey($key)->count() > 0) {
+        // Faster than Model approach with lots of records
+        while(DB::table('sensor_units')->where('auth_key', $key)->count() > 0) {
             $key = Str::random(32);
         }
 

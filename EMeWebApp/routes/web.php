@@ -36,4 +36,5 @@ Route::middleware([
 
     Route::get('sensors/generateKey', [SensorUnitController::class, 'generateKey'])->name('sensors.generateKey');
     Route::resource('sensors', SensorUnitController::class);
+    Route::resource('sensors.data', \App\Http\Controllers\SensorDataController::class);
 });

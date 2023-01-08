@@ -3,10 +3,10 @@ import AppLayout from '@/Layouts/AppLayout.vue';
 import DialogModal from "@/Components/DialogModal.vue";
 
 import {ref} from "vue";
-import {useForm, Link} from "@inertiajs/inertia-vue3";
+import {Link, useForm} from "@inertiajs/inertia-vue3";
 
 const props = defineProps({
-    SensorUnits: Array
+    SensorUnits: Object
 });
 
 
@@ -29,9 +29,12 @@ const editForm = useForm({
 
 })
 
+let gettingKey = ref(false);
+
 let showModal = ref(false);
 
 let editModal = ref(false);
+let editSensorID = ref(null);
 
 let deleteModal = ref(false);
 let deleteModalSensor = ref(null);
@@ -42,25 +45,36 @@ function showDeleteModal(unit) {
 }
 
 function showEditModal(unit) {
+    editSensorID.value = unit.id;
     editForm.name = unit.name;
     editForm.type = unit.type;
     editForm.description = unit.description;
     editForm.long = unit.long;
-    editForm.lat  = unit.lat;
+    editForm.lat = unit.lat;
     editForm.auth_key = unit.auth_key;
     editModal.value = true;
+}
+
+function SubmitEditModal() {
+    editForm.patch(route('sensors.update', editSensorID.value));
+    editModal.value = false;
 }
 
 function closeEditModal() {
     editForm.reset();
     editModal.value = false;
+    editSensorID.value = null;
 }
 
 function getKey() {
-    // Simple GET request using fetch
+    gettingKey.value = true;
     fetch(route('sensors.generateKey'))
         .then(response => response.json())
-        .then(data => (editForm.auth_key = data.auth_key));
+        .then(data => (editForm.auth_key = data.auth_key))
+        .finally(() => {
+            gettingKey.value = false
+        })
+
 }
 
 function closeModal() {
@@ -84,12 +98,13 @@ function submitCreateForm() {
     <AppLayout title="Dashboard">
         <template #header>
             <div class="flex flex-row items-center justify-between">
-                <h2 class="text-xl font-semibold leading-tight text-gray-800">
+                <nav class="text-xl font-semibold leading-tight text-gray-800">
                     Sensor Units
-                </h2>
-                <button class="bg-purple-500 px-2 py-1.5 rounded-md text-white font-bold flex items-center "
-                        @click="showModal = true">
-                    <svg class="mr-1 h-5 w-5" fill="currentColor" viewBox="0 0 20 20"
+                </nav>
+                <button
+                    class="bg-purple-500 px-2 py-1.5 rounded-md text-white font-bold flex items-center flex gap-1 hover:bg-purple-600 transition "
+                    @click="showModal = true">
+                    <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20"
                          xmlns="http://www.w3.org/2000/svg">
                         <path clip-rule="evenodd"
                               d="M10 18a8 8 0 100-16 8 8 0 000 16zm.75-11.25a.75.75 0 00-1.5 0v2.5h-2.5a.75.75 0 000 1.5h2.5v2.5a.75.75 0 001.5 0v-2.5h2.5a.75.75 0 000-1.5h-2.5v-2.5z"
@@ -109,12 +124,18 @@ function submitCreateForm() {
                         <div>
                             <div v-for="(unit) in SensorUnits" class="border">
                                 <div :class="[unit.active === true ? 'border-b' : '' ]"
-                                     class="flex flex-row items-center justify-between bg-slate-50 px-3 py-1">
-                                    <p class="font-bold">{{ unit.name }}</p>
+                                     class="flex flex-row items-center justify-between bg-slate-50 px-3 py-1.5">
+                                    <Link :href="route('sensors.data.index', unit.id)" class="font-bold">{{ unit.name }}</Link>
                                     <div class="flex flex-row items-center gap-0.5">
                                         <button @click="showEditModal(unit)">
-                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="h-4 w-4 text-gray-500 transition hover:text-gray-900">
-                                                <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
+                                            <svg class="h-4 w-4 text-gray-500 transition hover:text-gray-900"
+                                                 fill="none" stroke="currentColor"
+                                                 stroke-width="1.5" viewBox="0 0 24 24"
+                                                 xmlns="http://www.w3.org/2000/svg">
+                                                <path
+                                                    d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"
+                                                    stroke-linecap="round"
+                                                    stroke-linejoin="round"/>
                                             </svg>
 
                                         </button>
@@ -142,29 +163,37 @@ function submitCreateForm() {
                                         </button>
                                     </div>
                                 </div>
-                                <div v-if="unit.active" class="w-full">
-                                    <div class="flex justify-between">
-                                        <div class="w-full">
-                                            <div class="flex flex-row px-3 py-1">
-                                                <div class="mr-5">
-                                                    <p>Type</p>
-                                                    <p>Lat</p>
-                                                    <p>Long</p>
-                                                    <p>Description</p>
-                                                    <p>Last packet</p>
+                                <transition enter-active-class="transition-all duration-300 ease-in-out"
+                                            enter-from-class="max-h-0 text-white"
+                                            enter-to-class="max-h-36 text-black"
+                                            leave-active-class="transition-all duration-300 ease-in-out"
+                                            leave-from-class="max-h-36 text-black"
+                                            leave-to-class="max-h-0 text-white"
+                                >
+                                    <div v-if="unit.active" class="w-full">
+                                        <div class="flex justify-between">
+                                            <div class="w-full">
+                                                <div class="flex flex-row px-3 py-1">
+                                                    <div class="mr-5">
+                                                        <p>Type</p>
+                                                        <p>Lat</p>
+                                                        <p>Long</p>
+                                                        <p>Description</p>
+                                                        <p>Last packet</p>
+                                                    </div>
+                                                    <div>
+                                                        <p>{{ unit.type }}</p>
+                                                        <p>{{ unit.lat }}</p>
+                                                        <p>{{ unit.long }}</p>
+                                                        <p>{{ unit.description }}</p>
+                                                    </div>
                                                 </div>
-                                                <div>
-                                                    <p>{{ unit.type }}</p>
-                                                    <p>{{ unit.lat }}</p>
-                                                    <p>{{ unit.long }}</p>
-                                                    <p>{{ unit.description }}</p>
-                                                </div>
-                                            </div>
 
+                                            </div>
+                                            <div class="w-full"></div>
                                         </div>
-                                        <div class="w-full"></div>
                                     </div>
-                                </div>
+                                </transition>
                             </div>
                         </div>
                     </div>
@@ -173,9 +202,10 @@ function submitCreateForm() {
                         <h1 class="py-4 text-center text-3xl font-bold text-slate-700">There are no Sensor Units
                             associated
                             with your account</h1>
-                        <button class="bg-purple-500 px-2 py-1.5 rounded-md text-white font-bold flex items-center "
-                                @click="showModal = true">
-                            <svg class="mr-1 h-5 w-5" fill="currentColor" viewBox="0 0 20 20"
+                        <button
+                            class="bg-purple-500 flex gap-1 mx-auto mb-4 px-2 py-1.5 rounded-md text-white font-bold flex items-center shadow hover:bg-purple-600 transition "
+                            @click="showModal = true">
+                            <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20"
                                  xmlns="http://www.w3.org/2000/svg">
                                 <path clip-rule="evenodd"
                                       d="M10 18a8 8 0 100-16 8 8 0 000 16zm.75-11.25a.75.75 0 00-1.5 0v2.5h-2.5a.75.75 0 000 1.5h2.5v2.5a.75.75 0 001.5 0v-2.5h2.5a.75.75 0 000-1.5h-2.5v-2.5z"
@@ -243,9 +273,10 @@ function submitCreateForm() {
                 </div>
             </template>
             <template #footer>
-                <input class="rounded-md bg-purple-500 px-3 py-1 font-bold text-white transition hover:bg-purple-600"
-                       form="SensorCreateForm" type="submit"
-                       value="Create">
+                <input
+                    class="cursor-pointer rounded-md bg-purple-500 px-3 py-1 font-bold text-white transition hover:bg-purple-600"
+                    form="SensorCreateForm" type="submit"
+                    value="Create">
             </template>
 
         </DialogModal>
@@ -267,7 +298,7 @@ function submitCreateForm() {
             </template>
             <template #content>
                 <div class="">
-                    <form id="SensorUpdateForm" class="flex flex-col" @submit.prevent="">
+                    <form id="SensorUpdateForm" class="flex flex-col" @submit.prevent="SubmitEditModal">
                         <label class="mb-1 text-lg font-semibold" for="SensorUnitName">Name</label>
                         <input id="SensorUnitName" v-model="editForm.name"
                                class="mb-2 appearance-none rounded transition focus:border-purple-500 focus:ring-0"
@@ -300,29 +331,35 @@ function submitCreateForm() {
                                required
                                step="0.0000001"
                                type="number">
-                            <label class="mb-1 text-lg font-semibold" for="SensorUnitAuthKey">Authentication Key</label>
-                            <div class="flex flex-row gap-2 items-center">
-                                <input id="SensorUnitAuthKey" v-model="editForm.auth_key"
-                                       class=" appearance-none rounded transition focus:border-purple-500 focus:ring-0 w-full"
-                                       required
-                                       readonly
-                                       type="text">
-                                <button @click="getKey" class="rounded-md bg-purple-500 px-3 py-2 font-bold text-white transition hover:bg-purple-600 inline-flex items-center gap-1">
-                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
-                                        <path fill-rule="evenodd" d="M15.312 11.424a5.5 5.5 0 01-9.201 2.466l-.312-.311h2.433a.75.75 0 000-1.5H3.989a.75.75 0 00-.75.75v4.242a.75.75 0 001.5 0v-2.43l.31.31a7 7 0 0011.712-3.138.75.75 0 00-1.449-.39zm1.23-3.723a.75.75 0 00.219-.53V2.929a.75.75 0 00-1.5 0V5.36l-.31-.31A7 7 0 003.239 8.188a.75.75 0 101.448.389A5.5 5.5 0 0113.89 6.11l.311.31h-2.432a.75.75 0 000 1.5h4.243a.75.75 0 00.53-.219z" clip-rule="evenodd" />
-                                    </svg>
-
-
-                                    Generate
-                                </button>
-                            </div>
+                        <label class="mb-1 text-lg font-semibold" for="SensorUnitAuthKey">Authentication Key</label>
+                        <div class="flex flex-row gap-2 items-center">
+                            <input id="SensorUnitAuthKey" v-model="editForm.auth_key"
+                                   class=" appearance-none rounded transition focus:border-purple-500 focus:ring-0 w-full"
+                                   readonly
+                                   required
+                                   type="text">
+                            <button
+                                class="rounded-md bg-purple-500 px-3 py-2 font-bold text-white transition hover:bg-purple-600 inline-flex items-center gap-1"
+                                type="button"
+                                @click="getKey">
+                                <svg :class="[gettingKey === true ? 'animate-spin' : '']" class="w-5 h-5"
+                                     fill="currentColor"
+                                     viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                    <path clip-rule="evenodd"
+                                          d="M15.312 11.424a5.5 5.5 0 01-9.201 2.466l-.312-.311h2.433a.75.75 0 000-1.5H3.989a.75.75 0 00-.75.75v4.242a.75.75 0 001.5 0v-2.43l.31.31a7 7 0 0011.712-3.138.75.75 0 00-1.449-.39zm1.23-3.723a.75.75 0 00.219-.53V2.929a.75.75 0 00-1.5 0V5.36l-.31-.31A7 7 0 003.239 8.188a.75.75 0 101.448.389A5.5 5.5 0 0113.89 6.11l.311.31h-2.432a.75.75 0 000 1.5h4.243a.75.75 0 00.53-.219z"
+                                          fill-rule="evenodd"/>
+                                </svg>
+                                Generate
+                            </button>
+                        </div>
                     </form>
                 </div>
             </template>
             <template #footer>
-                <input class="rounded-md bg-purple-500 px-3 py-1 font-bold text-white transition hover:bg-purple-600"
-                       form="SensorUpdateForm" type="submit"
-                       value="Update">
+                <input
+                    class="cursor-pointer rounded-md bg-purple-500 px-3 py-1 font-bold text-white transition hover:bg-purple-600"
+                    form="SensorUpdateForm" type="submit"
+                    value="Update">
             </template>
 
         </DialogModal>
@@ -341,11 +378,15 @@ function submitCreateForm() {
 
             <template #footer>
                 <div class="flex justify-end gap-2">
-                    <button @click="closeDeleteModal" class="rounded-md border bg-gray-50 px-3 py-1 shadow transition hover:bg-gray-100">Cancel
+                    <button class="rounded-md border bg-gray-50 px-3 py-1 shadow transition hover:bg-gray-100"
+                            @click="closeDeleteModal">Cancel
                     </button>
                     <Link
-                        as="button" type="button" method="delete" :href="route('sensors.destroy', deleteModalSensor.id)"
-                        class="rounded-md bg-red-600 px-3 py-1 font-bold text-white shadow transition hover:bg-red-500 ">
+                        :href="route('sensors.destroy', deleteModalSensor.id)" as="button"
+                        class="rounded-md bg-red-600 px-3 py-1 font-bold text-white shadow transition hover:bg-red-500 "
+                        method="delete"
+                        type="button"
+                        @click="closeDeleteModal">
                         Delete
                     </Link>
 
