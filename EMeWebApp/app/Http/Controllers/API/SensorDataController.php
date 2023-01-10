@@ -56,10 +56,8 @@ class SensorDataController extends Controller
                 ]
             );
 
-            if ($threshold !== null) {
-                if ($data[$i] >= $threshold) {
-                    $trigger = true;
-                }
+            if (($threshold !== null) && $data[$i] >= $threshold) {
+                $trigger = true;
             }
         }
 

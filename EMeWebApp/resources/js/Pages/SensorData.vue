@@ -50,14 +50,14 @@ function nextPage() {
         <div class="py-12">
             <div class="mx-auto max-w-7xl sm:px-6 lg:px-8">
 
-                <h1 v-if="SensorData.data.length > 0">
+                <h1 class="text-2xl font-bold mb-4" v-if="SensorData.data.length > 0">
                     Entries associated with {{SensorUnit.name}}
                 </h1>
 
                 <div class="overflow-hidden bg-white shadow-xl sm:rounded-lg">
                     <div v-if="SensorData.data.length > 0">
                         <div>
-                            <div v-for="(data) in SensorData.data" class="border odd:bg-gray-50 even:bg-gray-100">
+                            <div v-for="(data) in SensorData.data" class="border" :class="[parseInt(data.value) >= parseInt(SensorUnit.threshold) ? 'bg-red-200' : 'odd:bg-gray-50 even:bg-gray-100']">
                                 <div class="flex flex-row items-center justify-between px-3 py-1.5">
                                     <p>{{data.measured_at}}</p>
                                     <p>{{data.created_at}}</p>
