@@ -26,7 +26,7 @@ const editForm = useForm({
     long: null,
     lat: null,
     auth_key: null,
-
+    threshold: null,
 })
 
 let gettingKey = ref(false);
@@ -52,6 +52,7 @@ function showEditModal(unit) {
     editForm.long = unit.long;
     editForm.lat = unit.lat;
     editForm.auth_key = unit.auth_key;
+    editForm.threshold = unit.threshold;
     editModal.value = true;
 }
 
@@ -334,23 +335,16 @@ function submitCreateForm() {
                         <label class="mb-1 text-lg font-semibold" for="SensorUnitAuthKey">Authentication Key</label>
                         <div class="flex flex-row gap-2 items-center">
                             <input id="SensorUnitAuthKey" v-model="editForm.auth_key"
-                                   class=" appearance-none rounded transition focus:border-purple-500 focus:ring-0 w-full"
-                                   readonly
+                                   class=" mb-2 appearance-none rounded transition focus:border-purple-500 focus:ring-0 w-full"
                                    required
                                    type="text">
-                            <button
-                                class="rounded-md bg-purple-500 px-3 py-2 font-bold text-white transition hover:bg-purple-600 inline-flex items-center gap-1"
-                                type="button"
-                                @click="getKey">
-                                <svg :class="[gettingKey === true ? 'animate-spin' : '']" class="w-5 h-5"
-                                     fill="currentColor"
-                                     viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                                    <path clip-rule="evenodd"
-                                          d="M15.312 11.424a5.5 5.5 0 01-9.201 2.466l-.312-.311h2.433a.75.75 0 000-1.5H3.989a.75.75 0 00-.75.75v4.242a.75.75 0 001.5 0v-2.43l.31.31a7 7 0 0011.712-3.138.75.75 0 00-1.449-.39zm1.23-3.723a.75.75 0 00.219-.53V2.929a.75.75 0 00-1.5 0V5.36l-.31-.31A7 7 0 003.239 8.188a.75.75 0 101.448.389A5.5 5.5 0 0113.89 6.11l.311.31h-2.432a.75.75 0 000 1.5h4.243a.75.75 0 00.53-.219z"
-                                          fill-rule="evenodd"/>
-                                </svg>
-                                Generate
-                            </button>
+                        </div>
+                        <label class="mb-1 text-lg font-semibold" for="SensorUnitThreshold">Threshold</label>
+                        <div class="flex flex-row gap-2 items-center">
+                            <input id="SensorUnitAuthKey" v-model="editForm.threshold"
+                                   class=" appearance-none rounded transition focus:border-purple-500 focus:ring-0 w-full"
+                                   required
+                                   type="number" step="0.5">
                         </div>
                     </form>
                 </div>

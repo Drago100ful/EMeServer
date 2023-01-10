@@ -14,7 +14,8 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::post('/sensorData/create', [\App\Http\Controllers\API\SensorDataController::class, 'store']);
+Route::post('/sensorData', [\App\Http\Controllers\API\SensorDataController::class, 'store']);
+Route::get('/sensorData/test', [\App\Http\Controllers\API\SensorDataController::class, 'test']);
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();

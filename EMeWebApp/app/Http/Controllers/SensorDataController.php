@@ -4,16 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Models\SensorUnit;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Redirect;
 use Inertia\Inertia;
 
 class SensorDataController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Inertia\Response
-     */
+
     public function index(Request $request, $id)
     {
         $unit = SensorUnit::where(
@@ -24,7 +20,7 @@ class SensorDataController extends Controller
         );
 
         if(!$unit->exists()) {
-            dd('does not exist');
+            return Redirect::route('sensors.index');
         }
 
         $unit = $unit->first();

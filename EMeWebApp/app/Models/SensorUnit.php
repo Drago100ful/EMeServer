@@ -17,7 +17,8 @@ class SensorUnit extends Model
         'description',
         'lat',
         'long',
-        'auth_key'
+        'auth_key',
+        'threshold'
     ];
 
 

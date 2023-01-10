@@ -124,7 +124,8 @@ class SensorUnitController extends Controller
                 'description' => $content->description,
                 'long' => $content->long,
                 'lat' => $content->lat,
-                'auth_key' => $content->auth_key
+                'auth_key' => $content->auth_key,
+                'threshold' => $content->threshold
             ]);
         }
     }

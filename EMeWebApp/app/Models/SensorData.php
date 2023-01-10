@@ -11,6 +11,7 @@ class SensorData extends Model
     use HasFactory;
 
     protected $fillable = [
+        'sensor_unit_id',
         'type',
         'value',
         'measured_at'

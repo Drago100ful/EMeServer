@@ -22,6 +22,7 @@ return new class extends Migration {
             $table->string('auth_key')->nullable();
             $table->decimal('long', 11, 7);
             $table->decimal('lat', 10, 7);
+            $table->decimal('threshold')->nullable();
             $table->timestamps();
         });
     }
